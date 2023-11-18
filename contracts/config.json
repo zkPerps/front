@@ -1,4 +1,35 @@
 {
   "version": 1,
-  "deployAliases": {}
+  "deployAliases": {
+    "berkeley": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/zk-app.json",
+      "fee": 1,
+      "feepayerKeyPath": "keys/feePayer.json",
+      "feepayerAlias": "berkeley"
+    },
+    "test-world": {
+      "url": "https://proxy.testworld.minaexplorer.com/graphql",
+      "keyPath": "keys/zk-app.json",
+      "fee": 1,
+      "feepayerKeyPath": "keys/feePayer.json",
+      "feepayerAlias": "berkeley"
+    },
+    "test": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/test.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "1",
+      "smartContract": "Add"
+    },
+    "perp1": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp1.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "1",
+      "smartContract": "Perpetual"
+    }
+  }
 }
