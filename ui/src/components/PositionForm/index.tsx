@@ -28,15 +28,19 @@ export const FormDialog: FC<{
   };
   return (
     <React.Fragment>
-      <Button variant="contained" onClick={handleClickOpen}>
+      <Button
+        color={"secondary"}
+        sx={{
+          mt: 3,
+        }}
+        variant="contained"
+        onClick={handleClickOpen}
+      >
         Open Position
       </Button>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Open position form</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            To subscribe to this website, please enter your email address here. We will send updates occasionally.
-          </DialogContentText>
           <Box
             sx={{
               display: "flex",

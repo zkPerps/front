@@ -6,10 +6,10 @@ import GradientBG from "../components/GradientBG.js";
 import styles from "../styles/Home.module.css";
 import { LocalStorageService, SerializableMap } from "@/services/localStorageService";
 import BN from "bn.js";
-import { Box, Button, CircularProgress } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
 import { PositionsPanel, PositionsTable } from "@/components/PositionsTable";
 import { FormDialog } from "@/components/PositionForm";
-import { SCALING_FACTOR } from "@/constants";
+import { CLOSE_PRICE, OPEN_PRICE, SCALING_FACTOR } from "@/constants";
 import * as React from "react";
 
 let transactionFee = 0.1;
@@ -87,7 +87,7 @@ export default function Home() {
         console.log("zkApp compiled");
         setDisplayText("zkApp compiled...");
 
-        const zkappPublicKey = PublicKey.fromBase58("B62qmU51Cmz36HPuRBAov4K8U5Nqybu612bvQWt9sxFV5J16ZbMXhNk");
+        const zkappPublicKey = PublicKey.fromBase58("B62qotxUFTxQcopibCicREzYZ4wzPg73y1MDmoask6gf5nghHaFBKs2");
 
         await zkappWorkerClient.initZkappInstance(zkappPublicKey);
 
@@ -180,7 +180,7 @@ export default function Home() {
     });
     console.log("account fetched");
     const { position, positionKey } = await state.zkappWorkerClient!.createPositionTransaction({
-      openPrice: 100 * SCALING_FACTOR,
+      openPrice: OPEN_PRICE * SCALING_FACTOR,
       type: positionType,
       collateral: Number(collateral),
       leverage,
@@ -358,17 +358,32 @@ export default function Home() {
   if (state.hasBeenSetup && state.accountExists) {
     mainContent = (
       <div style={{ justifyContent: "center", alignItems: "center" }}>
+        <Typography
+          variant={"h5"}
+          sx={{
+            mb: 5,
+          }}
+        >
+          Mock Prices, open price: {OPEN_PRICE}$, close price: {CLOSE_PRICE}$
+        </Typography>
         <div className={styles.center} style={{ padding: 0 }}>
           Current position number is: {state.currentNum!.toString()}
         </div>
         <div className={styles.center} style={{ padding: 0 }}>
           Current PnL is: {Number(state.currentPnl!.toString()) / SCALING_FACTOR}
         </div>
-        <div className={styles.center} style={{ padding: 0 }}>
-          Positions map is: {state.positionsMapRoot!.toString()}
-        </div>
-        <div className={styles.center} style={{ padding: 0 }}>
-          <Button variant="contained" onClick={onRefreshCurrentNum}>
+
+        <div className={styles.center} style={{ padding: 0, marginTop: "10px" }}>
+          <Button
+            sx={{
+              mt: 3,
+            }}
+            style={{
+              marginTop: "10px",
+            }}
+            variant="contained"
+            onClick={onRefreshCurrentNum}
+          >
             Get Latest State
           </Button>
         </div>
@@ -391,41 +406,39 @@ export default function Home() {
   }
 
   return (
-    <GradientBG>
-      <div className={styles.main} style={{ padding: 0 }}>
-        <div className={styles.center} style={{ padding: 0 }}>
-          {loading && (
-            <Box sx={{ display: "flex" }}>
-              <CircularProgress />
-            </Box>
-          )}
-          {setup}
-          {accountDoesNotExist}
-          {state.currentNum?.toString() === "0" ? initContent : <div>{mainContent}</div>}
-          {state.hasBeenSetup && state.accountExists && (
-            <FormDialog
-              onSubmit={({ positionType, leverage, collateral }) => {
-                onOpenPosition({
-                  positionType,
-                  collateral: (Number(collateral) * SCALING_FACTOR).toString(),
-                  leverage: leverage * SCALING_FACTOR,
-                });
-              }}
-            />
-          )}
-          {state.hasBeenSetup && state.accountExists && (
-            <PositionsPanel
-              positions={positions}
-              onClosePosition={idx =>
-                onClosePosition({
-                  closePrice: (105 * SCALING_FACTOR).toString(),
-                  positionKey: idx,
-                })
-              }
-            />
-          )}
-        </div>
+    <div className={styles.main} style={{ padding: 0, backgroundColor: "blanchedalmond" }}>
+      <div className={styles.center} style={{ padding: 0 }}>
+        {loading && (
+          <Box sx={{ display: "flex" }}>
+            <CircularProgress />
+          </Box>
+        )}
+        {setup}
+        {accountDoesNotExist}
+        {state.currentNum?.toString() === "0" ? initContent : <div>{mainContent}</div>}
+        {state.hasBeenSetup && state.accountExists && (
+          <FormDialog
+            onSubmit={({ positionType, leverage, collateral }) => {
+              onOpenPosition({
+                positionType,
+                collateral: (Number(collateral) * SCALING_FACTOR).toString(),
+                leverage: leverage * SCALING_FACTOR,
+              });
+            }}
+          />
+        )}
+        {state.hasBeenSetup && state.accountExists && (
+          <PositionsPanel
+            positions={positions}
+            onClosePosition={idx =>
+              onClosePosition({
+                closePrice: (CLOSE_PRICE * SCALING_FACTOR).toString(),
+                positionKey: idx,
+              })
+            }
+          />
+        )}
       </div>
-    </GradientBG>
+    </div>
   );
 }

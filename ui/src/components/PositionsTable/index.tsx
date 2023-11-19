@@ -7,7 +7,7 @@ import { Box, Button, Tab, Table } from "@mui/material";
 import TableBody from "@mui/material/TableBody";
 import { FC, useState } from "react";
 import { SerializableMap } from "@/services/localStorageService";
-import { Tabs } from "@mui/base";
+import Tabs from "@mui/material/Tabs";
 import { SCALING_FACTOR } from "@/constants";
 
 export const PositionsTable: FC<{
@@ -38,12 +38,12 @@ export const PositionsTable: FC<{
               <TableCell component="th" scope="row">
                 {key}
               </TableCell>
-              <TableCell align="right">{position.type}</TableCell>
-              <TableCell align="right">{position.collateral}</TableCell>
+              <TableCell align="right">{position.type === "s" ? "Short" : "Long"}</TableCell>
+              <TableCell align="right">{Number(position.collateral) / SCALING_FACTOR}</TableCell>
               <TableCell align="right">{Number(position.openPrice) / SCALING_FACTOR}</TableCell>
               <TableCell align="right">{Number(position.leverage) / SCALING_FACTOR}</TableCell>
               {isClosedTable ? (
-                <TableCell align="right">{position.closePrice}</TableCell>
+                <TableCell align="right">{Number(position.closePrice) / SCALING_FACTOR}</TableCell>
               ) : (
                 <TableCell align="right">
                   <Button onClick={() => onClosePosition(key)}>Close Position</Button>
@@ -75,9 +75,9 @@ export const PositionsPanel: FC<{ positions: SerializableMap; onClosePosition: (
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={currentTab} onChange={handleChange} aria-label="basic tabs example">
-          <Tab label="Active" onClick={() => handleChange(undefined, 0)} {...a11yProps(0)} />
-          <Tab label="Closed" onClick={() => handleChange(undefined, 1)} {...a11yProps(1)} />
+        <Tabs textColor="secondary" indicatorColor="secondary" value={currentTab} aria-label="basic tabs example">
+          <Tab label="Active" onClick={() => handleChange(undefined, 0)} {...a11yProps(0)} value={0} />
+          <Tab label="Closed" onClick={() => handleChange(undefined, 1)} {...a11yProps(1)} value={1} />
         </Tabs>
       </Box>
       {currentTab === 0 && (

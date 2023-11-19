@@ -86,6 +86,38 @@
       "feepayerAlias": "main-account",
       "fee": "4",
       "smartContract": "Perpetual"
+    },
+    "perp10": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp10.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "4",
+      "smartContract": "Perpetual"
+    },
+    "perp11": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp11.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "4",
+      "smartContract": "Perpetual"
+    },
+    "perp12": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp12.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "5",
+      "smartContract": "Perpetual"
+    },
+    "perp13": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp13.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "4",
+      "smartContract": "Perpetual"
     }
   }
 }
