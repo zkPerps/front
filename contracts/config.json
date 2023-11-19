@@ -30,6 +30,62 @@
       "feepayerAlias": "main-account",
       "fee": "1",
       "smartContract": "Perpetual"
+    },
+    "perp2": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp2.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "1",
+      "smartContract": "Perpetual"
+    },
+    "perp3": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp3.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "1",
+      "smartContract": "Perpetual"
+    },
+    "perp4": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp4.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "3",
+      "smartContract": "Perpetual"
+    },
+    "perp5": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp5.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "3",
+      "smartContract": "Perpetual"
+    },
+    "perp6": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp6.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "4",
+      "smartContract": "Perpetual"
+    },
+    "perp7": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp7.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "4",
+      "smartContract": "Perpetual"
+    },
+    "perp9": {
+      "url": "https://proxy.berkeley.minaexplorer.com/",
+      "keyPath": "keys/perp9.json",
+      "feepayerKeyPath": "C:\\Users\\Nikita/.cache/zkapp-cli/keys/main-account.json",
+      "feepayerAlias": "main-account",
+      "fee": "4",
+      "smartContract": "Perpetual"
     }
   }
 }

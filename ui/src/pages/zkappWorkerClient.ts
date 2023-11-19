@@ -1,4 +1,4 @@
-import { fetchAccount, PublicKey, Field, UInt64, Int64 } from "o1js";
+import { fetchAccount, PublicKey, Field, UInt64, Int64, UInt32 } from "o1js";
 
 import type { ZkappWorkerRequest, ZkappWorkerReponse, WorkerFunctions, WorkerFunctionReturn } from "./zkappWorker";
 import { WorkerFunctionArgs } from "./zkappWorker";
@@ -35,15 +35,21 @@ export default class ZkappWorkerClient {
     const result = await this._call("getCounter", {});
     return UInt64.fromJSON(result);
   }
+  async getMapRoot(): Promise<Field> {
+    const result = await this._call("getPositionsMapRoot", {});
+    return Field.fromJSON(result);
+  }
   async getPnl(): Promise<Int64> {
     const result = await this._call("getPnl", {});
-    debugger;
     if (result === 0) {
       return Int64.zero;
     }
     return Int64.fromJSON(result);
   }
-
+  async getNonce(): Promise<UInt32> {
+    const result = await this._call("getNonce", {});
+    return UInt32.fromJSON(result);
+  }
   async runInitState(args: WorkerFunctionArgs<"runInitState">[0]) {
     return await this._call("runInitState", args);
   }

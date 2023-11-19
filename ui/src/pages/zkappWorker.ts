@@ -50,12 +50,18 @@ const functions = {
   getCounter: async () => {
     return state.zkapp!.counter.get().toJSON();
   },
+  getPositionsMapRoot: async () => {
+    return state.zkapp!.positionsMap.get().toJSON();
+  },
   getPnl: async (args: {}) => {
     try {
       return state.zkapp!.pnl.get().toJSON();
     } catch (e) {
       return 0;
     }
+  },
+  getNonce: async (args: {}) => {
+    return state.zkapp!.account.nonce.get().toJSON();
   },
 
   runInitState: async ({ map }: { map: SerializableMap }) => {
@@ -80,7 +86,7 @@ const functions = {
     const merkleMap = await getMerkleMapFromMap(positionMap);
     const positionKey = await functions.getCounter().then(Field);
     const salt = Field.random();
-
+    console.log(`Creating position`);
     const position = new state.Position!({
       salt: salt,
       type: Character.fromString(type), // long
@@ -88,10 +94,13 @@ const functions = {
       leverage: UInt64.from(leverage), // 2x
       openPrice: UInt64.from(openPrice), // 30k$
     });
+    console.log("Setting position to the map");
     merkleMap.set(positionKey, position.hash());
+
     state.transaction = await Mina.transaction(async () => {
       state.zkapp!.openPosition(merkleMap.getWitness(positionKey), position);
     });
+    console.log(`Transaction created`);
     return { positionKey: positionKey.toString(), position: serializePosition(position) };
   },
 

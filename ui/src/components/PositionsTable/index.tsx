@@ -3,16 +3,18 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Box, Tab, Table } from "@mui/material";
+import { Box, Button, Tab, Table } from "@mui/material";
 import TableBody from "@mui/material/TableBody";
 import { FC, useState } from "react";
 import { SerializableMap } from "@/services/localStorageService";
 import { Tabs } from "@mui/base";
+import { SCALING_FACTOR } from "@/constants";
 
-export const PositionsTable: FC<{ positions: SerializableMap; isClosedTable: boolean }> = ({
-  positions,
-  isClosedTable,
-}) => {
+export const PositionsTable: FC<{
+  positions: SerializableMap;
+  isClosedTable: boolean;
+  onClosePosition: (idx: string) => void;
+}> = ({ positions, isClosedTable, onClosePosition }) => {
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -23,7 +25,11 @@ export const PositionsTable: FC<{ positions: SerializableMap; isClosedTable: boo
             <TableCell align="right">Collateral</TableCell>
             <TableCell align="right">Open price</TableCell>
             <TableCell align="right">Leverage</TableCell>
-            {isClosedTable && <TableCell align="right">ClosePrice</TableCell>}
+            {isClosedTable ? (
+              <TableCell align="right">ClosePrice</TableCell>
+            ) : (
+              <TableCell align="right">Actions</TableCell>
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -34,9 +40,15 @@ export const PositionsTable: FC<{ positions: SerializableMap; isClosedTable: boo
               </TableCell>
               <TableCell align="right">{position.type}</TableCell>
               <TableCell align="right">{position.collateral}</TableCell>
-              <TableCell align="right">{position.openPrice}</TableCell>
-              <TableCell align="right">{position.leverage}</TableCell>
-              {isClosedTable && <TableCell align="right">{position.closePrice}</TableCell>}
+              <TableCell align="right">{Number(position.openPrice) / SCALING_FACTOR}</TableCell>
+              <TableCell align="right">{Number(position.leverage) / SCALING_FACTOR}</TableCell>
+              {isClosedTable ? (
+                <TableCell align="right">{position.closePrice}</TableCell>
+              ) : (
+                <TableCell align="right">
+                  <Button onClick={() => onClosePosition(key)}>Close Position</Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
@@ -44,25 +56,43 @@ export const PositionsTable: FC<{ positions: SerializableMap; isClosedTable: boo
     </TableContainer>
   );
 };
-
-export const PositionsPanel: FC<{ positions: SerializableMap }> = ({ positions }) => {
-  const [currentTab, setCurrentTab] = useState<"active" | "closed">("active");
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
+export const PositionsPanel: FC<{ positions: SerializableMap; onClosePosition: (positionIdx: string) => void }> = ({
+  positions,
+  onClosePosition,
+}) => {
+  const [currentTab, setCurrentTab] = useState<number>(0);
+  console.log(currentTab);
+  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
+    console.log(newValue);
+    setCurrentTab(newValue);
+  };
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={currentTab} onChange={(_, value) => setCurrentTab(value as any)} aria-label="basic tabs example">
-          <Tab label="Active" id={"active"} />
-          <Tab label="Item Two" id={"closed"} />
+        <Tabs value={currentTab} onChange={handleChange} aria-label="basic tabs example">
+          <Tab label="Active" onClick={() => handleChange(undefined, 0)} {...a11yProps(0)} />
+          <Tab label="Closed" onClick={() => handleChange(undefined, 1)} {...a11yProps(1)} />
         </Tabs>
       </Box>
-      {currentTab === "active" && (
+      {currentTab === 0 && (
         <PositionsTable
           positions={positions.filter(el => el.position.closePrice === undefined)}
           isClosedTable={false}
+          onClosePosition={idx => onClosePosition(idx)}
         />
       )}
-      {currentTab === "closed" && (
-        <PositionsTable positions={positions.filter(el => el.position.closePrice !== undefined)} isClosedTable={true} />
+      {currentTab === 1 && (
+        <PositionsTable
+          onClosePosition={idx => onClosePosition(idx)}
+          positions={positions.filter(el => el.position.closePrice !== undefined)}
+          isClosedTable={true}
+        />
       )}
     </Box>
   );

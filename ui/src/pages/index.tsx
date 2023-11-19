@@ -1,13 +1,16 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./zkappWorker";
 import ZkappWorkerClient from "./zkappWorkerClient";
-import { PublicKey, Field, UInt64, Int64 } from "o1js";
+import { PublicKey, Field, UInt64, Int64, UInt32 } from "o1js";
 import GradientBG from "../components/GradientBG.js";
 import styles from "../styles/Home.module.css";
 import { LocalStorageService, SerializableMap } from "@/services/localStorageService";
 import BN from "bn.js";
-import { Button } from "@mui/material";
+import { Box, Button, CircularProgress } from "@mui/material";
 import { PositionsPanel, PositionsTable } from "@/components/PositionsTable";
+import { FormDialog } from "@/components/PositionForm";
+import { SCALING_FACTOR } from "@/constants";
+import * as React from "react";
 
 let transactionFee = 0.1;
 
@@ -18,7 +21,9 @@ export default function Home() {
     hasBeenSetup: false,
     accountExists: false,
     currentNum: null as null | Field,
+    positionsMapRoot: null as null | Field,
     currentPnl: null as null | Int64,
+    nonce: null as null | UInt32,
     publicKey: null as null | PublicKey,
     zkappPublicKey: null as null | PublicKey,
     creatingTransaction: false,
@@ -26,6 +31,7 @@ export default function Home() {
   const [positions, setPositions] = useState<SerializableMap>([]);
   const [displayText, setDisplayText] = useState("");
   const [transactionlink, setTransactionLink] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // -------------------------------------------------------
   // Do Setup
@@ -81,7 +87,7 @@ export default function Home() {
         console.log("zkApp compiled");
         setDisplayText("zkApp compiled...");
 
-        const zkappPublicKey = PublicKey.fromBase58("B62qouunvn8LEsZ4TR2Je7SuQMyV7UFWbjLFct5knaevBao52jSQ14n");
+        const zkappPublicKey = PublicKey.fromBase58("B62qmU51Cmz36HPuRBAov4K8U5Nqybu612bvQWt9sxFV5J16ZbMXhNk");
 
         await zkappWorkerClient.initZkappInstance(zkappPublicKey);
 
@@ -90,6 +96,8 @@ export default function Home() {
         await zkappWorkerClient.fetchAccount({ publicKey: zkappPublicKey });
         const currentNum = await zkappWorkerClient.getCounter();
         const currentPnl = await zkappWorkerClient.getPnl();
+        const positionsMapRoot = await zkappWorkerClient.getMapRoot();
+        const nonce = await zkappWorkerClient.getNonce();
         console.log(`Current state in zkApp: ${currentNum.toString()}`);
         setDisplayText("");
 
@@ -103,11 +111,30 @@ export default function Home() {
           accountExists,
           currentNum,
           currentPnl,
+          positionsMapRoot,
+          nonce,
         });
       }
     })();
   }, []);
+  useEffect(() => {
+    if (loading) {
+      const startNonce = state.positionsMapRoot?.toString();
+      setDisplayText(prevState => prevState + "\n" + "Waiting for transaction to be processed...");
+      const intervalId = setInterval(async () => {
+        await state.zkappWorkerClient?.fetchAccount({ publicKey: state.zkappPublicKey! });
+        const currentNonce = await state.zkappWorkerClient?.getMapRoot().then(res => res.toString());
+        console.log(`Previous nonce: ${startNonce}, current nonce: ${currentNonce}`);
 
+        if (currentNonce != null && currentNonce !== startNonce) {
+          clearInterval(intervalId);
+          await onRefreshCurrentNum();
+          setLoading(false);
+          setDisplayText("");
+        }
+      }, 1000);
+    }
+  }, [loading]);
   // -------------------------------------------------------
   // Wait for account to exist, if it didn't
 
@@ -134,7 +161,15 @@ export default function Home() {
   // -------------------------------------------------------
   // Send a transaction
 
-  const onOpenPosition = async () => {
+  const onOpenPosition = async ({
+    leverage,
+    collateral,
+    positionType,
+  }: {
+    collateral: string;
+    leverage: number;
+    positionType: "s" | "l";
+  }) => {
     setState({ ...state, creatingTransaction: true });
 
     setDisplayText("Creating a transaction...");
@@ -143,12 +178,12 @@ export default function Home() {
     await state.zkappWorkerClient!.fetchAccount({
       publicKey: state.publicKey!,
     });
-
+    console.log("account fetched");
     const { position, positionKey } = await state.zkappWorkerClient!.createPositionTransaction({
-      openPrice: 100,
-      type: "l",
-      collateral: 100,
-      leverage: 1,
+      openPrice: 100 * SCALING_FACTOR,
+      type: positionType,
+      collateral: Number(collateral),
+      leverage,
       positionMap: LocalStorageService.getMap(),
     });
     setDisplayText("Creating proof...");
@@ -176,7 +211,7 @@ export default function Home() {
 
     setTransactionLink(transactionLink);
     setDisplayText(transactionLink);
-
+    setLoading(true);
     setState({ ...state, creatingTransaction: false });
   };
 
@@ -220,7 +255,7 @@ export default function Home() {
 
     setTransactionLink(transactionLink);
     setDisplayText(transactionLink);
-
+    setLoading(true);
     setState({ ...state, creatingTransaction: false });
   };
 
@@ -254,6 +289,7 @@ export default function Home() {
     setTransactionLink(transactionLink);
     setDisplayText(transactionLink);
     setDisplayText("zkApp initialized...");
+    setLoading(true);
   };
 
   // -------------------------------------------------------
@@ -268,7 +304,10 @@ export default function Home() {
     });
     const currentNum = await state.zkappWorkerClient!.getCounter();
     const currentPnl = await state.zkappWorkerClient!.getPnl();
-    setState({ ...state, currentNum, currentPnl });
+    const positionsMapRoot = await state.zkappWorkerClient!.getMapRoot();
+    const nonce = await state.zkappWorkerClient!.getNonce();
+
+    setState({ ...state, currentNum, currentPnl, positionsMapRoot: positionsMapRoot, nonce });
     console.log(`Current state in zkApp: ${currentNum.toString()}`);
     setDisplayText("");
   };
@@ -323,14 +362,16 @@ export default function Home() {
           Current position number is: {state.currentNum!.toString()}
         </div>
         <div className={styles.center} style={{ padding: 0 }}>
-          Current PnL is: {state.currentPnl!.toString()}
+          Current PnL is: {Number(state.currentPnl!.toString()) / SCALING_FACTOR}
         </div>
-        <button className={styles.card} onClick={onOpenPosition} disabled={state.creatingTransaction}>
-          Send Transaction
-        </button>
-        <button className={styles.card} onClick={onRefreshCurrentNum}>
-          Get Latest State
-        </button>
+        <div className={styles.center} style={{ padding: 0 }}>
+          Positions map is: {state.positionsMapRoot!.toString()}
+        </div>
+        <div className={styles.center} style={{ padding: 0 }}>
+          <Button variant="contained" onClick={onRefreshCurrentNum}>
+            Get Latest State
+          </Button>
+        </div>
       </div>
     );
   }
@@ -352,11 +393,37 @@ export default function Home() {
   return (
     <GradientBG>
       <div className={styles.main} style={{ padding: 0 }}>
-        {state.hasBeenSetup && state.accountExists && <PositionsPanel positions={positions} />}
         <div className={styles.center} style={{ padding: 0 }}>
+          {loading && (
+            <Box sx={{ display: "flex" }}>
+              <CircularProgress />
+            </Box>
+          )}
           {setup}
           {accountDoesNotExist}
           {state.currentNum?.toString() === "0" ? initContent : <div>{mainContent}</div>}
+          {state.hasBeenSetup && state.accountExists && (
+            <FormDialog
+              onSubmit={({ positionType, leverage, collateral }) => {
+                onOpenPosition({
+                  positionType,
+                  collateral: (Number(collateral) * SCALING_FACTOR).toString(),
+                  leverage: leverage * SCALING_FACTOR,
+                });
+              }}
+            />
+          )}
+          {state.hasBeenSetup && state.accountExists && (
+            <PositionsPanel
+              positions={positions}
+              onClosePosition={idx =>
+                onClosePosition({
+                  closePrice: (105 * SCALING_FACTOR).toString(),
+                  positionKey: idx,
+                })
+              }
+            />
+          )}
         </div>
       </div>
     </GradientBG>
